@@ -210,7 +210,9 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
     N = y.shape[0]
 
     for n_iter in range(max_iters):
-        gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y) + 2 * lambda_ * w
+        penalty = 2 * lambda_ * w
+        penalty[0] = 0
+        gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y) + penalty
         w = w - gamma * gradient
     
     loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
