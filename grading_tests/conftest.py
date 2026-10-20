@@ -10,8 +10,8 @@ RTOL = 1e-4
 ATOL = 1e-8
 
 
-GITHUB_LINK = "C:/Users/suzan/OneDrive/School/EPFL/Machine Learning/Projects/project1"
-CLONE_DIRECTORY = "C:/Users/suzan/OneDrive/School/EPFL/Machine Learning/Projects/project1"
+GITHUB_LINK = None
+CLONE_DIRECTORY = None
 COMMIT_HASH = None
 KEEP_REPO = False
 USE_SSH = False

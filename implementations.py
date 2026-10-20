@@ -15,7 +15,7 @@ def compute_loss(y, tx, w):
     y_pred = tx @ w
     e = y - y_pred
 
-    loss = (1 / N) * np.sum(e**2)
+    loss = (1 / (2 * N)) * np.sum(e**2)
 
     return loss
 
@@ -57,9 +57,9 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
 
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w)
-        loss = compute_loss(y, tx, w) 
         w = w - gamma * gradient # updates w value
 
+    loss = compute_loss(y, tx, w) 
     return w, loss
 
 # Linear regression using stochastic gradient descen
@@ -109,7 +109,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         gradient = compute_stoch_gradient(y_n, tx_n, w)
         w = w - gamma * gradient #updates w value
 
-        loss = compute_loss(y, tx, w)
+    loss = compute_loss(y, tx, w)
 
     return w, loss
 
@@ -185,7 +185,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     for n_iter in range(max_iters):
         gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y)
         w = w - gamma * gradient
-        loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
+    
+    loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
 
     return w, loss
 
@@ -211,6 +212,7 @@ def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
     for n_iter in range(max_iters):
         gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y) + 2 * lambda_ * w
         w = w - gamma * gradient
-        loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
+    
+    loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
 
     return w, loss
