@@ -49,12 +49,10 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
+        loss: loss of last interation
+        w: model parameter of last iteration
     """
     # Define parameters to store w and loss
-    ws = [initial_w]
-    losses = []
     w = initial_w
 
     for n_iter in range(max_iters):
@@ -62,20 +60,14 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         loss = compute_loss(y, tx, w) 
         w = w - gamma * gradient # updates w value
 
-        # store w and loss
-        ws.append(w)
-        losses.append(loss)
-        print("GD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
-
-    return ws, losses
+    return w, loss
 
 # Linear regression using stochastic gradient descen
 def compute_stoch_gradient(y, tx, w):
     """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
 
     Args:
-        y: shape=(N, )
+        y: shape=(N, )6876
         tx: shape=(N,2)
         w: shape=(2, ). The vector of model parameters.
 
@@ -100,13 +92,11 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of SGD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD
+        loss: loss of last interation
+        w: model parameter of last iteration
     """
 
-    # Define parameters to store w and loss
-    ws = [initial_w]
-    losses = []
+    # Define parameters
     w = initial_w
     N = y.shape[0]
 
@@ -121,14 +111,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
 
         loss = compute_loss(y, tx, w)
 
-        # store w and loss
-        ws.append(w)
-        losses.append(loss)
-
-        print("SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
-    
-    return ws, losses
+    return w, loss
 
 # Least squares regression using normal equations
 def least_squares(y, tx):
@@ -161,7 +144,6 @@ def ridge_regression(y, tx, lambda_):
         lambda_: scalar.
 
     Returns:
-
         w: optimal weights, numpy array of shape(D,), D is the number of features.
     """
     N, D = y.shape[0], tx.shape[1]
@@ -173,5 +155,62 @@ def ridge_regression(y, tx, lambda_):
     return w_ridge, loss
 
 # Logistic regression using gradient descent (y ∈ {0,1})
+def sigmoid(t):
+    """apply sigmoid function on t.
+
+    Args:
+        t: scalar or numpy array
+    Returns:
+        scalar or numpy array
+    """
+    return 1/(1 + np.exp(-t))
+
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """
+    Args:
+        y:  shape=(N, 1)
+        tx: shape=(N, D)
+        initial_w: shape=(2, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of SGD
+        gamma: float
+
+    Returns:
+        loss: scalar number
+        w: shape=(D, 1)
+    """
+    # Define parameters
+    w = initial_w
+    N = y.shape[0]
+
+    for n_iter in range(max_iters):
+        gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y)
+        w = w - gamma * gradient
+        loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
+
+    return w, loss
 
 # Regularized logistic regression using gradient descent (y ∈ {0,1}, with regularization term λ∥w∥2)
+def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
+    """
+    Args:
+        y:  shape=(N, 1)
+        tx: shape=(N, D)
+        lambda_: scalar
+        initial_w: shape=(2, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of SGD
+        gamma: float
+
+    Returns:
+        loss: scalar number
+        w: shape=(D, 1)
+    """
+    # Define parameters
+    w = initial_w
+    N = y.shape[0]
+
+    for n_iter in range(max_iters):
+        gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y) + 2 * lambda_ * w
+        w = w - gamma * gradient
+        loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
+
+    return w, loss
