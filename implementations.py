@@ -1,15 +1,16 @@
 import numpy as np
 
+
 def compute_loss(y, tx, w):
-    """Calculate the mean squared error
+    """Compute the mean squared error loss, with the 1/2 factor: L(w) = 1/(2N) * sum((y - tx @ w)**2).
 
     Args:
-        y: shape=(N, )
-        tx: shape=(N,2)
-        w: shape=(2,). The vector of model parameters.
+        y: shape=(N,). Target values.
+        tx: shape=(N, D). Feature matrix.
+        w: shape=(D,). The vector of model parameters.
 
     Returns:
-        the value of the loss (a scalar), corresponding to the input parameters w.
+        loss: scalar, the MSE loss at w.
     """
     N = y.shape[0]
     y_pred = tx @ w
@@ -19,81 +20,90 @@ def compute_loss(y, tx, w):
 
     return loss
 
+
 # Linear regression using gradient descent
 def compute_gradient(y, tx, w):
-    """Computes the gradient at w.
+    """Compute the gradient of the MSE loss at w: grad = -1/N * tx.T @ (y - tx @ w).
 
     Args:
-        y: shape=(N, )
-        tx: shape=(N,2)
-        w: shape=(2, ). The vector of model parameters.
+        y: shape=(N,). Target values.
+        tx: shape=(N, D). Feature matrix.
+        w: shape=(D,). The vector of model parameters.
 
     Returns:
-        An array of shape (2, ) (same shape as w), containing the gradient of the loss at w.
+        gradient: shape=(D,) (same shape as w), the gradient of the MSE loss at w.
     """
     N = y.shape[0]
     y_pred = tx @ w
     e = y - y_pred
 
-    gradient = -1/N * (tx.T @ e)
+    gradient = -1 / N * (tx.T @ e)
 
     return gradient
 
+
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
-    """
+    """Fit a linear regression model by full-batch gradient descent on the MSE loss.
+
     Args:
-        y: shape=(N, )
-        tx: shape=(N,2)
-        initial_w: shape=(2, ). The initial guess (or the initialization) for the model parameters
-        max_iters: a scalar denoting the total number of iterations of GD
-        gamma: a scalar denoting the stepsize
+        y: shape=(N,). Target values.
+        tx: shape=(N, D). Feature matrix.
+        initial_w: shape=(D,). Initial guess for the model parameters.
+        max_iters: int, total number of gradient descent steps.
+        gamma: float, step size.
 
     Returns:
-        loss: loss of last interation
-        w: model parameter of last iteration
+        w: shape=(D,), model parameters after the last iteration.
+        loss: scalar, MSE loss at the final w.
     """
     # Define parameters to store w and loss
     w = initial_w
 
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w)
-        w = w - gamma * gradient # updates w value
+        w = w - gamma * gradient  # updates w value
 
-    loss = compute_loss(y, tx, w) 
+    loss = compute_loss(y, tx, w)
     return w, loss
 
-# Linear regression using stochastic gradient descen
+
+# Linear regression using stochastic gradient descent
 def compute_stoch_gradient(y, tx, w):
-    """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
+    """Compute a stochastic gradient of the MSE loss at w from a subset of samples.
+
+    In mean_squared_error_sgd this is called with a single sample (batch size 1).
 
     Args:
-        y: shape=(N, )6876
-        tx: shape=(N,2)
-        w: shape=(2, ). The vector of model parameters.
+        y: shape=(B,). Target values of the sampled batch (B = 1 here).
+        tx: shape=(B, D). Feature rows of the sampled batch.
+        w: shape=(D,). The vector of model parameters.
 
     Returns:
-        An array of shape (2, ) (same shape as w), containing the stochastic gradient of the loss at w.
+        gradient: shape=(D,) (same shape as w), the stochastic gradient of the MSE loss at w.
     """
     N = y.shape[0]
     y_pred = tx @ w
     e = y - y_pred
 
-    gradient = -1/N * (tx.T @ e)
+    gradient = -1 / N * (tx.T @ e)
     return gradient
 
+
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
-    """The Stochastic Gradient Descent algorithm (SGD).
+    """Fit a linear regression model by stochastic gradient descent on the MSE loss.
+
+    Each step uses one randomly chosen sample (mini-batch size 1).
 
     Args:
-        y: shape=(N, )
-        tx: shape=(N,2)
-        initial_w: shape=(2, ). The initial guess (or the initialization) for the model parameters
-        max_iters: a scalar denoting the total number of iterations of SGD
-        gamma: a scalar denoting the stepsize
+        y: shape=(N,). Target values.
+        tx: shape=(N, D). Feature matrix.
+        initial_w: shape=(D,). Initial guess for the model parameters.
+        max_iters: int, total number of SGD steps.
+        gamma: float, step size.
 
     Returns:
-        loss: loss of last interation
-        w: model parameter of last iteration
+        w: shape=(D,), model parameters after the last iteration.
+        loss: scalar, MSE loss of the final w, computed on the full dataset.
     """
 
     # Define parameters
@@ -103,28 +113,28 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     for n_iter in range(max_iters):
         # pick one random example
         n = np.random.randint(N)
-        y_n = y[n:n+1]
-        tx_n = tx[n:n+1]
+        y_n = y[n : n + 1]
+        tx_n = tx[n : n + 1]
 
         gradient = compute_stoch_gradient(y_n, tx_n, w)
-        w = w - gamma * gradient #updates w value
+        w = w - gamma * gradient  # updates w value
 
     loss = compute_loss(y, tx, w)
 
     return w, loss
 
+
 # Least squares regression using normal equations
 def least_squares(y, tx):
-    """Calculate the least squares solution.
-       returns mse, and optimal weights.
+    """Compute the least squares solution by solving the normal equations (tx.T @ tx) w = tx.T @ y.
 
     Args:
-        y: numpy array of shape (N,), N is the number of samples.
-        tx: numpy array of shape (N,D), D is the number of features.
+        y: shape=(N,). Target values.
+        tx: shape=(N, D). Feature matrix.
 
     Returns:
-        w: optimal weights, numpy array of shape(D,), D is the number of features.
-        mse: scalar.
+        w: shape=(D,), optimal weights.
+        loss: scalar, MSE loss (with 1/2 factor) at w.
     """
 
     N = y.shape[0]
@@ -134,85 +144,103 @@ def least_squares(y, tx):
 
     return w, loss
 
+
 # Ridge regression using normal equation
 def ridge_regression(y, tx, lambda_):
-    """implement ridge regression.
+    """Compute the ridge regression solution using the normal equations.
+
+    Minimizes 1/(2N) * ||y - tx @ w||^2 + lambda_ * ||w||^2, whose solution is
+    w = (tx.T @ tx + 2N * lambda_ * I)^(-1) @ tx.T @ y.
 
     Args:
-        y: numpy array of shape (N,), N is the number of samples.
-        tx: numpy array of shape (N,D), D is the number of features.
-        lambda_: scalar.
+        y: shape=(N,). Target values.
+        tx: shape=(N, D). Feature matrix.
+        lambda_: float, regularization strength.
 
     Returns:
-        w: optimal weights, numpy array of shape(D,), D is the number of features.
+        w: shape=(D,), optimal weights.
+        loss: scalar, MSE loss (with 1/2 factor) at w, WITHOUT the penalty term.
     """
     N, D = y.shape[0], tx.shape[1]
     lambda_prime = 2 * N * lambda_
 
     w_ridge = np.linalg.inv(tx.T @ tx + lambda_prime * np.identity(D)) @ tx.T @ y
     loss = compute_loss(y, tx, w_ridge)
-    
+
     return w_ridge, loss
+
 
 # Logistic regression using gradient descent (y ∈ {0,1})
 def sigmoid(t):
-    """apply sigmoid function on t.
+    """Apply the sigmoid function 1 / (1 + exp(-t)) elementwise.
 
     Args:
-        t: scalar or numpy array
+        t: scalar or numpy array.
+
     Returns:
-        scalar or numpy array
+        scalar or numpy array of the same shape as t, with values in (0, 1).
     """
-    return 1/(1 + np.exp(-t))
+    return 1 / (1 + np.exp(-t))
+
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """
+    """Fit a logistic regression classifier by full-batch gradient descent.
+
+    Models P(y_n = 1 | x_n) = sigmoid(x_n @ w) and minimizes the mean negative
+    log-likelihood: 1/N * sum(log(1 + exp(tx @ w)) - y * (tx @ w)).
+
     Args:
-        y:  shape=(N, 1)
-        tx: shape=(N, D)
-        initial_w: shape=(2, ). The initial guess (or the initialization) for the model parameters
-        max_iters: a scalar denoting the total number of iterations of SGD
-        gamma: float
+        y: shape=(N,). Labels in {0, 1}.
+        tx: shape=(N, D). Feature matrix.
+        initial_w: shape=(D,). Initial guess for the model parameters.
+        max_iters: int, total number of gradient descent steps.
+        gamma: float, step size.
 
     Returns:
-        loss: scalar number
-        w: shape=(D, 1)
+        w: shape=(D,), model parameters after the last iteration.
+        loss: scalar, mean negative log-likelihood at the final w.
     """
     # Define parameters
     w = initial_w
     N = y.shape[0]
 
     for n_iter in range(max_iters):
-        gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y)
+        gradient = (1 / N) * tx.T @ (sigmoid(tx @ w) - y)
         w = w - gamma * gradient
-    
-    loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
+
+    loss = (1 / N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
 
     return w, loss
 
+
 # Regularized logistic regression using gradient descent (y ∈ {0,1}, with regularization term λ∥w∥2)
-def reg_logistic_regression(y, tx, lambda_ , initial_w, max_iters, gamma):
-    """
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
+    """Fit an L2-regularized logistic regression classifier by full-batch gradient descent.
+
+    Minimizes the mean negative log-likelihood plus lambda_ * ||w||^2, so each
+    gradient step includes an extra 2 * lambda_ * w term. All weights,
+    including the bias (if tx has a column of ones), are penalized.
+
     Args:
-        y:  shape=(N, 1)
-        tx: shape=(N, D)
-        lambda_: scalar
-        initial_w: shape=(2, ). The initial guess (or the initialization) for the model parameters
-        max_iters: a scalar denoting the total number of iterations of SGD
-        gamma: float
+        y: shape=(N,). Labels in {0, 1}.
+        tx: shape=(N, D). Feature matrix.
+        lambda_: float, regularization strength.
+        initial_w: shape=(D,). Initial guess for the model parameters.
+        max_iters: int, total number of gradient descent steps.
+        gamma: float, step size.
 
     Returns:
-        loss: scalar number
-        w: shape=(D, 1)
+        w: shape=(D,), model parameters after the last iteration.
+        loss: scalar, mean negative log-likelihood at the final w, WITHOUT the penalty term.
     """
     # Define parameters
     w = initial_w
     N = y.shape[0]
 
     for n_iter in range(max_iters):
-        gradient = (1/N) * tx.T @ (sigmoid(tx @ w) - y) + 2 * lambda_ * w
+        gradient = (1 / N) * tx.T @ (sigmoid(tx @ w) - y) + 2 * lambda_ * w
         w = w - gamma * gradient
-    
-    loss = (1/N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
+
+    loss = (1 / N) * np.sum(-y * (tx @ w) + np.log(1 + np.exp(tx @ w)))
 
     return w, loss
