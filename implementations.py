@@ -183,6 +183,27 @@ def sigmoid(t):
     return 1 / (1 + np.exp(-t))
 
 
+# small function to find logistic loss more easily
+def logistic_loss(y, tx, w):
+    """Mean negative log-likelihood for logistic regression.
+
+    Args:
+        y: shape=(N,), labels in {0, 1}.
+        tx: shape=(N, D), feature matrix.
+        w: shape=(D,), model weights.
+
+    Returns:
+        loss: scalar, mean negative log-likelihood (no penalty term).
+    """
+
+    t = tx @ w
+    log_loss = np.mean(
+        np.logaddexp(0, t) - y * t
+    )  # same as eqn in other functions, just written so no overflow when t is large
+
+    return log_loss
+
+
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Fit a logistic regression classifier by full-batch gradient descent.
 
